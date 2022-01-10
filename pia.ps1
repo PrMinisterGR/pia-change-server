@@ -1,6 +1,9 @@
 # LOCATION WHERE PIACTL.EXE RESIDES. THE "\" AT THE END IS NECESSARY, THIS MUST BE A FOLDER
 $PIA_Install_Folder = "C:\Program Files\Private Internet Access\"
 
+# PIA EXECUTABLE
+$PIA_EXE = $PIA_Install_Folder+"piactl.exe"
+
 # TIMEOUT BETWEEN ACTIONS, 1 SECOND IS A REASONABLE DEFAULT
 $Sleep_Seconds = 1
 
@@ -12,21 +15,21 @@ $New_VPN_IP = ""
 while ($Current_VPN_IP -eq $New_VPN_IP) {
 
     # GET CURRENT IP
-    $Current_VPN_IP = &$PIA_Install_Folder"piactl.exe" --% get vpnip
+    $Current_VPN_IP = &$PIA_EXE --% get vpnip
     Write-Output "Current VPN IP: " $Current_VPN_IP
     Start-Sleep -Seconds $Sleep_Seconds
 
     # GET CURRENT REGION
-    $Current_VPN_Region = &$PIA_Install_Folder"piactl.exe" --% get region
+    $Current_VPN_Region = &$PIA_EXE --% get region
     Write-Output "Current VPN Region: " $Current_VPN_Region
     Start-Sleep -Seconds $Sleep_Seconds
 
     # GET ALL REGIONS
-    $VPN_Regions = &$PIA_Install_Folder"piactl.exe" --% get regions
+    $VPN_Regions = &$PIA_EXE --% get regions
     Start-Sleep -Seconds $Sleep_Seconds
 
     # EXCLUDE "AUTO" REGION
-    $New_VPN_Regions_Temp = $VPN_Regions | Where-Object { $_ –ne "auto" }
+    $New_VPN_Regions_Temp = $VPN_Regions | Where-Object { $_ -ne "auto" }
 
     # EXCLUDE CURRENT REGION
     $New_VPN_Regions = $New_VPN_Regions_Temp | Where-Object{ $_ -ne $Current_VPN_Region}
@@ -39,17 +42,17 @@ while ($Current_VPN_IP -eq $New_VPN_IP) {
 
     # CONNECT TO RANDOM REGION
     $Region_Argument = "set region"
-    $Set_VPN_Region = Start-Process $PIA_Install_Folder"piactl.exe" -ArgumentList @($Region_Argument, $New_Region)
+    $Set_VPN_Region = Start-Process $PIA_EXE -ArgumentList @($Region_Argument, $New_Region)
     Write-Output $Set_VPN_Region
     Start-Sleep -Seconds $Sleep_Seconds
 
     # CHECK THE NEW VPN IP
-    $New_VPN_IP = &$PIA_Install_Folder"piactl.exe" --% get vpnip
+    $New_VPN_IP = &$PIA_EXE --% get vpnip
 
     # WAIT UNTI WE GET A REAL EXTERNAL IP
     while (($New_VPN_IP -eq "Unknown") -or ($New_VPN_IP -like $Current_VPN_IP)){
         Start-Sleep -Seconds $Sleep_Seconds
-        $New_VPN_IP = &$PIA_Install_Folde"piactl.exe" --% get vpnip
+        $New_VPN_IP = &$PIA_EXE --% get vpnip
     }
     Write-Output "New VPN IP:" $New_VPN_IP
 }
